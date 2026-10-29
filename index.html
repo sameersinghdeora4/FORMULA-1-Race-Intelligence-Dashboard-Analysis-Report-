@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>F1 Racing Analytics | Race Data, Visualized</title>
+  <meta name="description" content="An interactive Formula 1 analytics project exploring drivers, teams, race outcomes, tyres, circuits, countries and podium finishes.">
+  <meta name="theme-color" content="#111318">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#101114;--panel:#191b20;--panel2:#202229;--text:#f6f7f9;--muted:#aeb3bd;--red:#e10600;--line:rgba(255,255,255,.1)}
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth;scroll-padding-top:88px}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif}
+    h1,h2,h3,.brand{font-family:'Space Grotesk',sans-serif}
+    a{text-decoration:none}
+    .topbar{position:sticky;top:0;z-index:1000;background:rgba(16,17,20,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+    .nav-wrap{min-height:76px}
+    .brand{color:#fff;font-weight:700;font-size:1.18rem;letter-spacing:-.04em}
+    .brand-mark{display:inline-grid;place-items:center;width:34px;height:30px;background:var(--red);color:white;font-weight:700;font-size:.8rem;transform:skew(-10deg);margin-right:10px}
+    .nav-link{color:#c9cbd1!important;font-size:.92rem;font-weight:600;padding:.7rem .85rem!important}
+    .nav-link:hover,.nav-link.active{color:#fff!important}
+    .nav-cta{background:var(--red);color:white;border-radius:6px;padding:.7rem 1rem;font-weight:700;font-size:.9rem}
+    .hero{position:relative;isolation:isolate;overflow:hidden;padding:92px 0 74px;background:#101114}
+    .hero:before{content:"";position:absolute;inset:-12px;z-index:-1;background:linear-gradient(90deg,rgba(10,11,14,.96) 0%,rgba(10,11,14,.82) 38%,rgba(10,11,14,.32) 100%),linear-gradient(0deg,#101114 0%,transparent 45%,rgba(10,11,14,.22) 100%),url("assets/f1-hero.png") center 48%/cover no-repeat;filter:blur(2px) saturate(.9);transform:scale(1.02)}
+    .hero:after{z-index:0}
+    .hero>.container{position:relative;z-index:1}
+    .hero:after{content:"";position:absolute;right:-100px;bottom:-190px;width:470px;height:470px;border:1px solid rgba(255,255,255,.08);border-radius:50%;box-shadow:0 0 0 35px rgba(255,255,255,.018),0 0 0 75px rgba(255,255,255,.015);pointer-events:none}
+    .eyebrow{display:inline-flex;align-items:center;gap:9px;color:#ff7772;text-transform:uppercase;letter-spacing:.16em;font-weight:700;font-size:.76rem}
+    .eyebrow:before{content:"";width:25px;height:2px;background:var(--red)}
+    .hero h1{font-size:clamp(2.8rem,6vw,5.3rem);font-weight:700;letter-spacing:-.065em;line-height:.99;max-width:760px;margin:23px 0}
+    .hero h1 span{color:var(--red)}
+    .hero p{max-width:620px;color:var(--muted);font-size:1.08rem;line-height:1.8}
+    .btn-red{background:var(--red);border:1px solid var(--red);color:white;padding:13px 20px;border-radius:6px;font-weight:700}
+    .btn-red:hover{background:#bd0500;color:white}
+    .btn-ghost{border:1px solid #4b4d54;color:white;padding:13px 20px;border-radius:6px;font-weight:700}
+    .btn-ghost:hover{border-color:white;color:white}
+    .hero-visual{position:relative;min-height:300px;display:flex;align-items:center;justify-content:center}
+    .speed-card{width:min(100%,420px);padding:25px;background:linear-gradient(145deg,#24262d,#17181d);border:1px solid var(--line);border-radius:14px;box-shadow:0 30px 70px rgba(0,0,0,.3);transform:rotate(2deg)}
+    .speed-top{display:flex;justify-content:space-between;color:var(--muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.1em}
+    .speed-number{font-family:'Space Grotesk';font-size:4rem;font-weight:700;letter-spacing:-.07em;margin:15px 0 0}
+    .speed-number span{color:var(--red);font-size:1.5rem}
+    .track-line{height:5px;background:#393b43;border-radius:8px;overflow:hidden;margin:14px 0 20px}
+    .track-line span{display:block;width:78%;height:100%;background:var(--red)}
+    .mini-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .mini-stats strong{display:block;font-size:1.15rem}.mini-stats small{color:var(--muted);font-size:.72rem}
+    .section{padding:78px 0}
+    .section-kicker{color:#ff7772;text-transform:uppercase;letter-spacing:.15em;font-size:.75rem;font-weight:700}
+    .section-title{font-size:clamp(2rem,4vw,3rem);font-weight:700;letter-spacing:-.05em;margin:10px 0 14px}
+    .section-desc{color:var(--muted);max-width:720px;line-height:1.75}
+    .kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-top:34px}
+    .kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:22px;min-height:138px}
+    .kpi .icon{width:40px;height:40px;border-radius:9px;background:rgba(225,6,0,.13);color:#ff7772;display:grid;place-items:center;font-size:1.2rem;margin-bottom:18px}
+    .kpi strong{font-family:'Space Grotesk';font-size:2rem;letter-spacing:-.04em;display:block}
+    .kpi span{color:var(--muted);font-size:.88rem}
+    .viz-section{background:#15161a;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+    .section-heading{display:flex;justify-content:space-between;align-items:end;gap:24px;margin-bottom:28px}
+    .section-heading .section-desc{margin-bottom:0}
+    .tag{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:#202127;border-radius:100px;padding:8px 12px;color:#d7d9df;font-size:.78rem;white-space:nowrap}
+    .viz-frame{background:#fff;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.12);box-shadow:0 18px 50px rgba(0,0,0,.2)}
+    .viz-frame .tableauPlaceholder{width:100%;margin:0 auto}
+    .viz-frame .tableauViz{max-width:100%!important}
+    .tableau-responsive{position:relative;width:100%;background:#fff}
+    .tableau-responsive iframe{display:block;width:100%;border:0;background:#fff}
+    .tableau-responsive.dashboard-viz{height:clamp(850px, 180vw, 1900px)}
+    .tableau-responsive.story-viz{height:clamp(650px, 90vw, 1050px)}
+    .tableau-responsive.dashboard-viz iframe,.tableau-responsive.story-viz iframe{height:100%}
+    .viz-note{font-size:.84rem;color:var(--muted);margin-top:14px;line-height:1.6}
+    .story-intro{display:grid;grid-template-columns:1.1fr .9fr;gap:30px;align-items:center;margin-bottom:28px}
+    .story-points{display:grid;gap:12px}
+    .story-point{display:flex;gap:13px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px}
+    .story-point i{color:#ff7772;font-size:1.2rem;margin-top:2px}
+    .story-point strong{display:block;margin-bottom:3px}.story-point span{color:var(--muted);font-size:.9rem;line-height:1.55}
+    .about-card{background:linear-gradient(135deg,#211d20,#17181d);border:1px solid var(--line);border-radius:14px;padding:28px}
+    .about-card p{color:var(--muted);line-height:1.8;margin-bottom:0}
+    .footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-size:.86rem}
+    .footer strong{color:#fff}
+    #backToTop{position:fixed;right:20px;bottom:20px;width:42px;height:42px;border-radius:8px;background:var(--red);color:#fff;display:grid;place-items:center;z-index:999;box-shadow:0 8px 25px #0005}
+    /* Robust layout safeguards */
+    .container{width:min(100% - 32px, 1180px);margin-inline:auto}
+    .hero .row{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(300px,.8fr);gap:40px;align-items:center}
+    .hero .col-lg-7,.hero .col-lg-5{width:auto;max-width:100%;min-width:0}
+    .hero-content,.hero-visual,.speed-card{min-width:0;max-width:100%}
+    .hero-visual{padding:12px}
+    .nav-wrap{gap:16px}
+    .nav-wrap>div{flex-wrap:wrap}
+    .nav-link{white-space:nowrap}
+    .viz-frame{position:relative;isolation:isolate}
+    .viz-frame .tableauPlaceholder{display:block;max-width:100%;overflow:hidden}
+    .viz-frame object.tableauViz{display:block;max-width:100%}
+    @media(max-width:991px){
+      .hero{padding:70px 0 55px}
+      .hero .row{grid-template-columns:minmax(0,1fr);gap:18px}
+      .hero-visual{margin-top:0;min-height:220px}
+      .speed-card{transform:none}
+      .kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .story-intro{grid-template-columns:1fr}
+      .section-heading{align-items:flex-start;flex-direction:column}
+    }
+    @media(max-width:575px){.nav-wrap{min-height:66px}.brand{font-size:1rem}.nav-cta{padding:.6rem .75rem;font-size:.8rem}.hero h1{font-size:2.85rem}.section{padding:55px 0}.kpi-grid{gap:10px}.kpi{padding:16px;min-height:125px}.kpi strong{font-size:1.7rem}.speed-number{font-size:3.2rem}.viz-frame{border-radius:8px}.tag{white-space:normal}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <nav class="container nav-wrap d-flex align-items-center justify-content-between">
+      <a class="brand d-flex align-items-center" href="#home"><span class="brand-mark">F1</span> RACING ANALYTICS</a>
+      <div class="d-flex align-items-center gap-2 gap-lg-3">
+        <div class="d-none d-md-flex align-items-center">
+          <a class="nav-link active" href="#home">Home</a>
+          <a class="nav-link" href="#overview">Overview</a>
+          <a class="nav-link" href="#dashboard">Dashboard</a>
+          <a class="nav-link" href="#story">Story</a>
+        </div>
+        <a class="nav-cta" href="#dashboard">Explore data <i class="bi bi-arrow-up-right"></i></a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero" id="home">
+      <div class="container position-relative" style="z-index:1">
+        <div class="row align-items-center g-5">
+          <div class="col-lg-7">
+            <span class="eyebrow">Motorsport • Data • Insights</span>
+            <h1>Every race has a story.<br><span>Find the pattern.</span></h1>
+            <p>An interactive look into Formula 1 performance — from driver points and team rankings to race outcomes, tyre strategies, podiums and global participation.</p>
+            <div class="d-flex flex-wrap gap-3 mt-4">
+              <a class="btn btn-red" href="#dashboard">Explore dashboard <i class="bi bi-arrow-down-right ms-1"></i></a>
+              <a class="btn btn-ghost" href="#story">View driver story <i class="bi bi-play-circle ms-1"></i></a>
+            </div>
+          </div>
+          <div class="col-lg-5">
+            <div class="hero-visual">
+              <div class="speed-card">
+                <div class="speed-top"><span>F1 data overview</span><span>Race insights / 01</span></div>
+                <div class="speed-number">RACE<span> / ANALYZE</span></div>
+                <div class="track-line"><span></span></div>
+                <div class="mini-stats">
+                  <div><strong>10</strong><small>Teams</small></div>
+                  <div><strong>17</strong><small>Seasons</small></div>
+                  <div><strong>29</strong><small>Circuits</small></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="overview">
+      <div class="container">
+        <span class="section-kicker">The project at a glance</span>
+        <h2 class="section-title">Numbers behind the grid.</h2>
+        <p class="section-desc">Use these headline metrics as a quick entry point, then explore the full interactive Tableau dashboard below.</p>
+        <div class="kpi-grid">
+          <div class="kpi"><div class="icon"><i class="bi bi-people"></i></div><strong>10</strong><span>Competing teams</span></div>
+          <div class="kpi"><div class="icon"><i class="bi bi-calendar3"></i></div><strong>17</strong><span>Seasons in play</span></div>
+          <div class="kpi"><div class="icon"><i class="bi bi-flag"></i></div><strong>6,464</strong><span>Race outcomes logged</span></div>
+          <div class="kpi"><div class="icon"><i class="bi bi-globe2"></i></div><strong>29</strong><span>Circuits showcased</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section viz-section" id="dashboard">
+      <div class="container">
+        <div class="section-heading">
+          <div>
+            <span class="section-kicker">Interactive exploration</span>
+            <h2 class="section-title">F1 Racing Analytics Dashboard</h2>
+            <p class="section-desc">Explore the nine views in the Tableau dashboard, including reliability, driver and team performance, championship analysis, tyre compounds, country participation and podium analysis.</p>
+          </div>
+          <span class="tag"><i class="bi bi-mouse"></i> Interactive Tableau view</span>
+        </div>
+        <div class="viz-frame"><div class="tableau-responsive dashboard-viz">
+          <iframe
+            title="F1 Racing Analytics Dashboard"
+            src="https://public.tableau.com/shared/9Z3NGD45Z?:showVizHome=no&amp;:embed=true&amp;:toolbar=yes"
+            loading="lazy"
+            allowfullscreen>
+          </iframe>
+        </div></div>
+        <p class="viz-note"><i class="bi bi-info-circle me-1"></i> If the dashboard takes a moment to load, give Tableau a few seconds. Use the controls inside the visualization to explore the data.</p>
+      </div>
+    </section>
+
+    <section class="section" id="story">
+      <div class="container">
+        <div class="story-intro">
+          <div>
+            <span class="section-kicker">A focused data story</span>
+            <h2 class="section-title">Driver Points Leaderboard</h2>
+            <p class="section-desc">Compare the leading drivers by accumulated points. Use the Top N control in the story to change how many drivers appear and explore how the leaderboard responds.</p>
+          </div>
+          <div class="story-points">
+            <div class="story-point"><i class="bi bi-bar-chart-line"></i><div><strong>Compare performance</strong><span>Read the bars to compare driver point totals at a glance.</span></div></div>
+            <div class="story-point"><i class="bi bi-sliders"></i><div><strong>Adjust Top N</strong><span>Use the parameter control to expand or narrow the leaderboard.</span></div></div>
+            <div class="story-point"><i class="bi bi-lightbulb"></i><div><strong>Takeaway</strong><span>The leaderboard makes differences between leading drivers easier to spot.</span></div></div>
+          </div>
+        </div>
+        <div class="viz-frame"><div class="tableau-responsive story-viz">
+          <iframe
+            title="Driver Points Leaderboard Story"
+            src="https://public.tableau.com/shared/JJ57Z8NDB?:showVizHome=no&amp;:embed=true&amp;:toolbar=yes"
+            loading="lazy"
+            allowfullscreen>
+          </iframe>
+        </div></div>
+        <p class="viz-note"><i class="bi bi-info-circle me-1"></i> The story is embedded directly from Tableau Public. Its available controls depend on the published Tableau view.</p>
+      </div>
+    </section>
+
+    <section class="section viz-section" id="about">
+      <div class="container">
+        <div class="row g-4 align-items-stretch">
+          <div class="col-lg-5">
+            <span class="section-kicker">About this project</span>
+            <h2 class="section-title">From race records to racing insights.</h2>
+          </div>
+          <div class="col-lg-7">
+            <div class="about-card h-100">
+              <p>This project uses Tableau visualizations to explore Formula 1 data across drivers, teams, race outcomes, tyre strategies, circuits, countries and podium finishes. The dashboard supports broad exploration, while the driver leaderboard story gives one question a closer look: how do the leading drivers compare on points, and how does changing Top N affect the view?</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container d-flex flex-column flex-md-row justify-content-between gap-2">
+      <div>© <span id="year"></span> <strong>F1 Racing Analytics</strong>. Built for data exploration.</div>
+      <div>Dashboard and story powered by Tableau Public.</div>
+    </div>
+  </footer>
+  <a href="#home" id="backToTop" aria-label="Back to top"><i class="bi bi-arrow-up"></i></a>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+    // Tableau is loaded by the responsive iframe embeds above.
+</script>
+</body>
+</html>
